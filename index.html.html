@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-slate-950 text-slate-100">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TDC Link Hub & Program Catalogue Builder</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            tdc: {
+              gold: '#EAB308',
+              navy: '#0B132B',
+              slate: '#1C2541',
+              accent: '#3A506B',
+              cyan: '#06B6D4'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(51, 65, 85, 0.8);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(71, 85, 105, 1);
+    }
+
+    /* Device Preview Wrappers */
+    .preview-mobile {
+      width: 375px;
+      height: 740px;
+      border-radius: 38px;
+      border: 10px solid #1e293b;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+    }
+
+    .preview-desktop {
+      width: 100%;
+      max-width: 840px;
+      height: 740px;
+      border-radius: 16px;
+      border: 4px solid #1e293b;
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
+    }
+
+    /* Hide scrollbars for filter pills */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="h-full font-sans antialiased bg-slate-950 text-slate-100 flex flex-col overflow-hidden">
+
+  <header class="h-14 bg-slate-900/90 border-b border-slate-800 px-4 flex items-center justify-between z-20 shrink-0">
+    <div class="flex items-center space-x-3">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-yellow-500 to-amber-300 flex items-center justify-center font-black text-slate-950 text-base shadow-lg shadow-yellow-500/20">
+        TDC
+      </div>
+      <div>
+        <h1 class="text-sm font-bold text-slate-100 tracking-wide flex items-center gap-2">
+          Taruna Development Center <span class="bg-amber-500/10 text-amber-400 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-amber-500/20">Studio v3.0</span>
+        </h1>
+      </div>
+    </div>
+
+    <!-- Header Control Bar & Export Actions -->
+    <div class="flex items-center space-x-2">
+      <button onclick="resetToDefault()" class="px-2.5 py-1.5 text-xs font-medium text-slate-400 hover:text-slate-200 bg-slate-800/60 hover:bg-slate-800 rounded-lg transition border border-slate-700/50 flex items-center gap-1.5" title="Reset all configurations to default">
+        <i class="fa-solid fa-rotate-left"></i> <span class="hidden sm:inline">Reset</span>
+      </button>
+      <button onclick="exportJSON()" class="px-2.5 py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg transition border border-slate-700 flex items-center gap-1.5" title="Backup current config to JSON">
+        <i class="fa-solid fa-file-export"></i> <span class="hidden sm:inline">Backup</span>
+      </button>
+      <label class="px-2.5 py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg transition border border-slate-700 flex items-center gap-1.5 cursor-pointer" title="Import config from JSON">
+        <i class="fa-solid fa-file-import"></i> <span class="hidden sm:inline">Import</span>
+        <input type="file" id="importFileInput" onchange="importJSON(event)" class="hidden" accept=".json" />
+      </label>
+      <button onclick="downloadSelfHtmlApp()" class="px-3 py-1.5 text-xs font-semibold text-emerald-300 bg-emerald-950 hover:bg-emerald-900 border border-emerald-700/60 rounded-lg transition flex items-center gap-1.5" title="Download standalone editable HTML app file">
+        <i class="fa-solid fa-download"></i> <span class="hidden md:inline">Download HTML App</span>
+      </button>
+      <button onclick="copyOrderheroHTML()" class="px-4 py-1.5 text-xs font-bold text-slate-950 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 rounded-lg shadow-md shadow-amber-500/20 transition flex items-center gap-2">
+        <i class="fa-solid fa-code"></i> Copy Orderhero HTML
+      </button>
+    </div>
+  </header>
+
+  <div class="flex-1 flex overflow-hidden">
+    
+    <!-- LEFT PANE: Studio CPanel / Configuration Editor -->
+    <aside class="w-full md:w-[480px] lg:w-[520px] border-r border-slate-800 bg-slate-900/60 flex flex-col shrink-0 overflow-hidden">
+      <!-- Section Navigation Tabs -->
+      <div class="flex border-b border-slate-800 bg-slate-900/90 overflow-x-auto text-xs font-medium text-slate-400 no-scrollbar">
+        <button onclick="switchTab('branding')" id="tab-branding" class="tab-btn active border-b-2 border-amber-500 text-amber-400 font-semibold px-4 py-3 flex items-center gap-2 transition shrink-0">
+          <i class="fa-solid fa-id-card"></i> Profile & Branding
+        </button>
+        <button onclick="switchTab('categories')" id="tab-categories" class="tab-btn border-b-2 border-transparent hover:text-slate-200 px-4 py-3 flex items-center gap-2 transition shrink-0">
+          <i class="fa-solid fa-layer-group"></i> Filter Categories
+        </button>
+        <button onclick="switchTab('programs')" id="tab-programs" class="tab-btn border-b-2 border-transparent hover:text-slate-200 px-4 py-3 flex items-center gap-2 transition shrink-0">
+          <i class="fa-solid fa-list-check"></i> Programs (<span id="program-count-badge">0</span>)
+        </button>
+        <button onclick="switchTab('footer')" id="tab-footer" class="tab-btn border-b-2 border-transparent hover:text-slate-200 px-4 py-3 flex items-center gap-2 transition shrink-0">
+          <i class="fa-solid fa-sliders"></i> Theme & CTA
+        </button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto p-4 space-y-6">
+
+        <!-- TAB 1: PROFILE & BRANDING (WITH BASE64 UPLOAD) -->
+        <div id="content-branding" class="tab-content space-y-5">
+          <!-- Profile Photo Upload Card -->
+          <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800 space-y-3">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2">
+              <i class="fa-solid fa-camera"></i> Profile Photo / Emblem
+            </h3>
+            
+            <div class="flex items-center gap-4">
+              <div class="relative group shrink-0">
+                <img id="cpanel-avatar-preview" src="https://via.placeholder.com/150" alt="Avatar Preview" class="w-16 h-16 rounded-full object-cover border-2 border-amber-500/60 bg-slate-950" />
+              </div>
+              <div class="flex-1 space-y-2">
+                <label class="block px-3 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg text-center cursor-pointer transition shadow-md">
+                  <i class="fa-solid fa-upload"></i> Upload Photo (Local)
+                  <input type="file" id="profileImageInput" onchange="handleImageUpload(event)" accept="image/*" class="hidden" />
+                </label>
+                <button onclick="removeProfileImage()" class="w-full px-3 py-1 bg-slate-800 hover:bg-slate-700 text-rose-400 text-[11px] font-semibold rounded-lg border border-slate-700 transition">
+                  <i class="fa-solid fa-trash"></i> Reset to Default Logo
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Profile Frame Style</label>
+              <select id="cfg-profileShape" onchange="updateConfig('profileShape', this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500">
+                <option value="circle">Circle Pass (Lingkaran)</option>
+                <option value="rounded">Rounded Box (Persegi Tumpul)</option>
+                <option value="idcard">ID Card Pass (Banner Border)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Profile Details Config -->
+          <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800 space-y-3">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2">
+              <i class="fa-solid fa-heading"></i> Center Details & Taglines
+            </h3>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Center / Institution Name</label>
+              <input type="text" id="cfg-title" oninput="updateConfig('title', this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Subtitle / Short Description</label>
+              <textarea id="cfg-subtitle" oninput="updateConfig('subtitle', this.value)" rows="2" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500"></textarea>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Announcement Pill Banner</label>
+              <input type="text" id="cfg-announcement" oninput="updateConfig('announcement', this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500" placeholder="📢 Pendaftaran Batch 2026 Resmi Dibuka!" />
+            </div>
+          </div>
+
+          <!-- Quick Stats Bar Config -->
+          <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800 space-y-3">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2">
+              <i class="fa-solid fa-chart-line"></i> Quick Stats Counter Bar
+            </h3>
+            <div class="grid grid-cols-3 gap-2">
+              <div>
+                <label class="block text-[10px] text-slate-400 mb-1">Stat 1 Label</label>
+                <input type="text" id="cfg-stat1Label" oninput="updateConfig('stat1Label', this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-200" />
+                <input type="text" id="cfg-stat1Value" oninput="updateConfig('stat1Value', this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-amber-400 font-bold mt-1" />
+              </div>
+              <div>
+                <label class="block text-[10px] text-slate-400 mb-1">Stat 2 Label</label>
+                <input type="text" id="cfg-stat2Label" oninput="updateConfig('stat2Label', this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-200" />
+                <input type="text" id="cfg-stat2Value" oninput="updateConfig('stat2Value', this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-amber-400 font-bold mt-1" />
+              </div>
+              <div>
+                <label class="block text-[10px] text-slate-400 mb-1">Stat 3 Label</label>
+                <input type="text" id="cfg-stat3Label" oninput="updateConfig('stat3Label', this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-200" />
+                <input type="text" id="cfg-stat3Value" oninput="updateConfig('stat3Value', this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-amber-400 font-bold mt-1" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: CATEGORY MANAGEMENT -->
+        <div id="content-categories" class="tab-content hidden space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">Filter Categories</h3>
+            <button onclick="addCategory()" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-lg text-xs transition flex items-center gap-1.5">
+              <i class="fa-solid fa-plus"></i> Add Category
+            </button>
+          </div>
+          <div id="category-list" class="space-y-2">
+            <!-- Dynamically populated categories -->
+          </div>
+        </div>
+
+        <!-- TAB 3: PROGRAM TRAINING MANAGER (WITH BLOCK COLOR THEME) -->
+        <div id="content-programs" class="tab-content hidden space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">Program Training Manager</h3>
+            <button onclick="addProgramItem()" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-lg text-xs transition flex items-center gap-1.5">
+              <i class="fa-solid fa-plus"></i> Add Program
+            </button>
+          </div>
+
+          <div id="programs-editor-container" class="space-y-4">
+            <!-- Dynamically populated program editors -->
+          </div>
+        </div>
+
+        <!-- TAB 4: THEME & CTA ACTIONS -->
+        <div id="content-footer" class="tab-content hidden space-y-5">
+          
+          <!-- FEATURE BARU: WARNA BACKGROUND DASAR -->
+          <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800 space-y-3">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2">
+              <i class="fa-solid fa-fill-drip"></i> Warna Background Dasar (Latar Belakang)
+            </h3>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Pilih Tema Latar Belakang</label>
+              <select id="cfg-bgTheme" onchange="updateConfig('bgTheme', this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500">
+                <option value="slate-950">Dark Slate (Default Gelap)</option>
+                <option value="pure-black">Pure Black (Hitam Pekat)</option>
+                <option value="deep-navy">Deep Navy (Biru Dongker Gelap)</option>
+                <option value="emerald-dark">Emerald Dark (Hijau Tua Gelap)</option>
+                <option value="pure-white">Pure White (Putih Terang)</option>
+                <option value="light-gray">Light Gray (Abu-abu Terang)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Global Theme Selector -->
+          <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Global Color Palette (Aksen)</label>
+            <div class="grid grid-cols-2 gap-2">
+              <button onclick="applyThemePreset('navy-gold')" class="p-2.5 rounded-lg border border-slate-700 bg-slate-950 hover:border-amber-500 text-left transition flex items-center gap-2">
+                <span class="w-4 h-4 rounded-full bg-amber-500 shrink-0 inline-block"></span>
+                <span class="text-xs font-semibold text-slate-200">Navy & Gold (TDC)</span>
+              </button>
+              <button onclick="applyThemePreset('cyber-teal')" class="p-2.5 rounded-lg border border-slate-700 bg-slate-950 hover:border-cyan-500 text-left transition flex items-center gap-2">
+                <span class="w-4 h-4 rounded-full bg-cyan-400 shrink-0 inline-block"></span>
+                <span class="text-xs font-semibold text-slate-200">Cyber Teal</span>
+              </button>
+              <button onclick="applyThemePreset('crimson-slate')" class="p-2.5 rounded-lg border border-slate-700 bg-slate-950 hover:border-rose-500 text-left transition flex items-center gap-2">
+                <span class="w-4 h-4 rounded-full bg-rose-500 shrink-0 inline-block"></span>
+                <span class="text-xs font-semibold text-slate-200">Crimson Executive</span>
+              </button>
+              <button onclick="applyThemePreset('dark-minimal')" class="p-2.5 rounded-lg border border-slate-700 bg-slate-950 hover:border-slate-400 text-left transition flex items-center gap-2">
+                <span class="w-4 h-4 rounded-full bg-slate-300 shrink-0 inline-block"></span>
+                <span class="text-xs font-semibold text-slate-200">Dark Minimalist</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Actions & CTA Links -->
+          <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800 space-y-4">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2">
+              <i class="fa-solid fa-headset"></i> Support & Catalogue Links
+            </h3>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">WhatsApp Admin Link</label>
+              <input type="text" id="cfg-waLink" oninput="updateConfig('waLink', this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">WhatsApp Button Text</label>
+              <input type="text" id="cfg-waText" oninput="updateConfig('waText', this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">PDF Catalogue Download Link</label>
+              <input type="text" id="cfg-pdfLink" oninput="updateConfig('pdfLink', this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500" placeholder="https://example.com/catalogue-tdc.pdf" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Footer Copyright Text</label>
+              <input type="text" id="cfg-footerText" oninput="updateConfig('footerText', this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500" />
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- RIGHT PANE: Interactive Real-Time Responsive Preview -->
+    <main class="flex-1 bg-slate-950 flex flex-col items-center justify-start p-4 overflow-hidden relative">
+      <!-- Device View Controls -->
+      <div class="mb-4 bg-slate-900 border border-slate-800 p-1.5 rounded-xl flex items-center space-x-2 z-10 shadow-lg">
+        <button id="btn-view-mobile" onclick="setDeviceView('mobile')" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-amber-500 text-slate-950 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-mobile-screen"></i> Mobile View
+        </button>
+        <button id="btn-view-desktop" onclick="setDeviceView('desktop')" class="px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-slate-200 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-desktop"></i> Desktop View
+        </button>
+      </div>
+
+      <!-- Preview Device Frame -->
+      <div id="preview-wrapper" class="preview-mobile transition-all duration-300 flex flex-col overflow-hidden bg-slate-950 relative">
+        <!-- Live Render Screen Container -->
+        <div id="preview-render-screen" class="w-full h-full overflow-y-auto bg-slate-950 p-4 space-y-4">
+          <!-- Rendered live HTML output injected via JS -->
+        </div>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- Notification Toast -->
+  <div id="toast" class="fixed bottom-5 right-5 bg-amber-500 text-slate-950 font-bold text-xs px-4 py-3 rounded-xl shadow-2xl transition transform translate-y-20 opacity-0 flex items-center gap-2 z-50">
+    <i class="fa-solid fa-circle-check text-base"></i> <span id="toast-message">Success!</span>
+  </div>
+
+  <script>
+    // Initial Default Data Configuration
+    const defaultData = {
+      theme: 'navy-gold',
+      bgTheme: 'slate-950', // Feature Baru: Background Dasar
+      accentColor: '#EAB308',
+      accentBg: 'bg-amber-500',
+      accentText: 'text-amber-400',
+      accentBorder: 'border-amber-500/30',
+      profileImage: 'https://via.placeholder.com/150/0b132b/eab308?text=TDC',
+      profileShape: 'circle',
+      title: 'Taruna Development Center',
+      subtitle: 'Official Leadership, Executive Training & Certification Link Hub',
+      announcement: '📢 Pendaftaran Training & Sertifikasi Batch 2026 Resmi Dibuka!',
+      stat1Label: 'Trainees',
+      stat1Value: '12,500+',
+      stat2Label: 'Programs',
+      stat2Value: '35+',
+      stat3Label: 'Rating',
+      stat3Value: '4.9/5.0',
+      categories: ['Semua', 'Leadership', 'Sertifikasi', 'Soft Skills', 'Public Speaking'],
+      programs: [
+        {
+          id: 'pg-1',
+          title: 'Executive Leadership & Strategic Management',
+          category: 'Leadership',
+          badge: 'BEST SELLER',
+          duration: '3 Days Intensive',
+          method: 'Hybrid (Online + Offline)',
+          description: 'Program akselerasi kepemimpinan manajerial, pengambilan keputusan strategis, dan corporate governance.',
+          price: 'Rp 3.500.000',
+          ctaType: 'orderhero',
+          ctaUrl: 'https://orderhero.id/checkout/tdc-leadership',
+          cardTheme: 'gold-highlight'
+        },
+        {
+          id: 'pg-2',
+          title: 'Certified Public Speaking & Master Presenter',
+          category: 'Public Speaking',
+          badge: 'LIMITED SEAT',
+          duration: '2 Days Workshop',
+          method: 'Offline Class',
+          description: 'Kuasai panggung, teknik persuasi audiens, serta penyusunan materi presentasi kelas eksekutif.',
+          price: 'Rp 2.250.000',
+          ctaType: 'whatsapp',
+          ctaUrl: 'https://wa.me/6281234567890?text=Halo%20Admin%20TDC,%20saya%20tertarik%20dengan%20Certified%20Public%20Speaking',
+          cardTheme: 'emerald-green'
+        },
+        {
+          id: 'pg-3',
+          title: 'Professional Certified Human Capital Specialist',
+          category: 'Sertifikasi',
+          badge: 'REGISTRATION OPEN',
+          duration: '1 Month Bootcamp',
+          method: 'Online Zoom',
+          description: 'Program sertifikasi kompetensi SDM berbasis SKKNI untuk Praktisi HR dan Talent Developer.',
+          price: 'Rp 4.800.000',
+          ctaType: 'orderhero',
+          ctaUrl: 'https://orderhero.id/checkout/tdc-hr',
+          cardTheme: 'navy-standard'
+        }
+      ],
+      waLink: 'https://wa.me/6281234567890',
+      waText: 'Konsultasi Program via WhatsApp',
+      pdfLink: 'https://example.com/catalogue-tdc-2026.pdf',
+      footerText: '© 2026 Taruna Development Center. All Rights Reserved.'
+    };
+
+    let appData = {};
+    let activeFilter = 'Semua';
+
+    // Preset Style Latar Belakang
+    const bgThemeMap = {
+      'slate-950': { bgClass: 'bg-slate-950 text-slate-100', hex: '#020617', isLight: false },
+      'pure-black': { bgClass: 'bg-black text-slate-100', hex: '#000000', isLight: false },
+      'deep-navy': { bgClass: 'bg-blue-950 text-blue-50', hex: '#172554', isLight: false },
+      'emerald-dark': { bgClass: 'bg-emerald-950 text-emerald-50', hex: '#022c22', isLight: false },
+      'pure-white': { bgClass: 'bg-white text-slate-900', hex: '#ffffff', isLight: true },
+      'light-gray': { bgClass: 'bg-slate-100 text-slate-900', hex: '#f1f5f9', isLight: true }
+    };
+
+    // Application Initialization
+    window.onload = function() {
+      const saved = localStorage.getItem('tdc_builder_config_v3');
+      if (saved) {
+        try {
+          appData = JSON.parse(saved);
+        } catch(e) {
+          appData = JSON.parse(JSON.stringify(defaultData));
+        }
+      } else {
+        appData = JSON.parse(JSON.stringify(defaultData));
+      }
+
+      if (!appData.bgTheme) appData.bgTheme = 'slate-950';
+      
+      syncInputsFromState();
+      renderCategoriesEditor();
+      renderProgramsEditor();
+      renderLivePreview();
+    };
+
+    // Save to LocalStorage
+    function saveState() {
+      localStorage.setItem('tdc_builder_config_v3', JSON.stringify(appData));
+      renderLivePreview();
+    }
+
+    // Reset Configuration
+    function resetToDefault() {
+      if (confirm('Apakah Anda yakin ingin mereset seluruh konfigurasi ke awal?')) {
+        appData = JSON.parse(JSON.stringify(defaultData));
+        syncInputsFromState();
+        renderCategoriesEditor();
+        renderProgramsEditor();
+        saveState();
+        showToast('Konfigurasi berhasil di-reset!');
+      }
+    }
+
+    // Toast Alert Function
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-message').innerText = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 2500);
+    }
+
+    // Switch CPanel Tabs
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('border-amber-500', 'text-amber-400', 'font-semibold');
+        btn.classList.add('border-transparent');
+      });
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.add('hidden');
+      });
+
+      const activeBtn = document.getElementById(`tab-${tabName}`);
+      if (activeBtn) {
+        activeBtn.classList.add('border-amber-500', 'text-amber-400', 'font-semibold');
+        activeBtn.classList.remove('border-transparent');
+      }
+
+      const activeContent = document.getElementById(`content-${tabName}`);
+      if (activeContent) {
+        activeContent.classList.remove('hidden');
+      }
+    }
+
+    // Toggle Preview Device View
+    function setDeviceView(view) {
+      const wrapper = document.getElementById('preview-wrapper');
+      const btnMobile = document.getElementById('btn-view-mobile');
+      const btnDesktop = document.getElementById('btn-view-desktop');
+
+      if (view === 'mobile') {
+        wrapper.className = 'preview-mobile transition-all duration-300 flex flex-col overflow-hidden bg-slate-950 relative';
+        btnMobile.className = 'px-3 py-1.5 text-xs font-semibold rounded-lg bg-amber-500 text-slate-950 transition flex items-center gap-1.5';
+        btnDesktop.className = 'px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-slate-200 transition flex items-center gap-1.5';
+      } else {
+        wrapper.className = 'preview-desktop transition-all duration-300 flex flex-col overflow-hidden bg-slate-950 relative';
+        btnDesktop.className = 'px-3 py-1.5 text-xs font-semibold rounded-lg bg-amber-500 text-slate-950 transition flex items-center gap-1.5';
+        btnMobile.className = 'px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-slate-200 transition flex items-center gap-1.5';
+      }
+    }
+
+    // Sync input fields from application state
+    function syncInputsFromState() {
+      const fields = ['title', 'subtitle', 'announcement', 'stat1Label', 'stat1Value', 'stat2Label', 'stat2Value', 'stat3Label', 'stat3Value', 'waLink', 'waText', 'pdfLink', 'footerText', 'profileShape', 'bgTheme'];
+      fields.forEach(f => {
+        const el = document.getElementById(`cfg-${f}`);
+        if (el) el.value = appData[f] || '';
+      });
+
+      const avatarPrev = document.getElementById('cpanel-avatar-preview');
+      if (avatarPrev && appData.profileImage) {
+        avatarPrev.src = appData.profileImage;
+      }
+    }
+
+    // Update config state property
+    function updateConfig(key, val) {
+      appData[key] = val;
+      saveState();
+    }
+
+    function handleImageUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        if (file.size > 2 * 1024 * 1024) {
+          alert('Ukuran file foto maksimal 2MB.');
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          appData.profileImage = e.target.result;
+          document.getElementById('cpanel-avatar-preview').src = e.target.result;
+          saveState();
+          showToast('Foto profil berhasil diupload!');
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function removeProfileImage() {
+      appData.profileImage = 'https://via.placeholder.com/150/0b132b/eab308?text=TDC';
+      document.getElementById('cpanel-avatar-preview').src = appData.profileImage;
+      saveState();
+      showToast('Foto profil di-reset ke default.');
+    }
+
+    function applyThemePreset(preset) {
+      appData.theme = preset;
+      if (preset === 'navy-gold') {
+        appData.accentColor = '#EAB308';
+        appData.accentBg = 'bg-amber-500';
+        appData.accentText = 'text-amber-400';
+        appData.accentBorder = 'border-amber-500/30';
+      } else if (preset === 'cyber-teal') {
+        appData.accentColor = '#06B6D4';
+        appData.accentBg = 'bg-cyan-500';
+        appData.accentText = 'text-cyan-400';
+        appData.accentBorder = 'border-cyan-500/30';
+      } else if (preset === 'crimson-slate') {
+        appData.accentColor = '#F43F5E';
+        appData.accentBg = 'bg-rose-500';
+        appData.accentText = 'text-rose-400';
+        appData.accentBorder = 'border-rose-500/30';
+      } else if (preset === 'dark-minimal') {
+        appData.accentColor = '#E2E8F0';
+        appData.accentBg = 'bg-slate-200';
+        appData.accentText = 'text-slate-200';
+        appData.accentBorder = 'border-slate-400/30';
+      }
+      saveState();
+      showToast(`Tema ${preset.replace('-', ' ')} diterapkan`);
+    }
+
+    // CATEGORY MANAGEMENT LOGIC
+    function renderCategoriesEditor() {
+      const container = document.getElementById('category-list');
+      container.innerHTML = '';
+
+      appData.categories.forEach((cat, index) => {
+        const div = document.createElement('div');
+        div.className = 'flex items-center space-x-2 bg-slate-900/80 p-2 rounded-lg border border-slate-800';
+        div.innerHTML = `
+          <input type="text" value="${cat}" onchange="editCategory(${index}, this.value)" class="flex-1 bg-slate-950 border border-slate-800 rounded-md px-2.5 py-1 text-xs text-slate-200 focus:outline-none focus:border-amber-500" ${cat === 'Semua' ? 'disabled' : ''} />
+          ${cat !== 'Semua' ? `
+            <button onclick="deleteCategory(${index})" class="text-rose-400 hover:text-rose-300 p-1 text-xs transition">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          ` : '<span class="text-[10px] text-slate-500 px-2 font-medium">Default</span>'}
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function addCategory() {
+      const name = prompt('Masukkan nama Kategori baru:');
+      if (name && name.trim() !== '') {
+        const cleanName = name.trim();
+        if (!appData.categories.includes(cleanName)) {
+          appData.categories.push(cleanName);
+          renderCategoriesEditor();
+          saveState();
+        }
+      }
+    }
+
+    function editCategory(index, newVal) {
+      if (newVal && newVal.trim() !== '') {
+        const oldVal = appData.categories[index];
+        appData.categories[index] = newVal.trim();
+        
+        appData.programs.forEach(p => {
+          if (p.category === oldVal) p.category = newVal.trim();
+        });
+
+        renderProgramsEditor();
+        saveState();
+      }
+    }
+
+    function deleteCategory(index) {
+      const catName = appData.categories[index];
+      if (confirm(`Hapus kategori "${catName}"?`)) {
+        appData.categories.splice(index, 1);
+        appData.programs.forEach(p => {
+          if (p.category === catName) p.category = 'Semua';
+        });
+        renderCategoriesEditor();
+        renderProgramsEditor();
+        saveState();
+      }
+    }
+
+    function renderProgramsEditor() {
+      const container = document.getElementById('programs-editor-container');
+      container.innerHTML = '';
+
+      document.getElementById('program-count-badge').innerText = appData.programs.length;
+
+      appData.programs.forEach((pg, index) => {
+        const card = document.createElement('div');
+        card.className = 'bg-slate-900/90 border border-slate-800 rounded-xl p-4 space-y-3 relative group';
+        
+        const catOptions = appData.categories.filter(c => c !== 'Semua').map(c => `
+          <option value="${c}" ${pg.category === c ? 'selected' : ''}>${c}</option>
+        `).join('');
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between border-b border-slate-800/80 pb-2">
+            <span class="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+              <i class="fa-solid fa-grip-vertical text-slate-600"></i> Program #${index + 1}
+            </span>
+            <div class="flex items-center space-x-1">
+              <button onclick="moveProgram(${index}, -1)" ${index === 0 ? 'disabled' : ''} class="px-2 py-1 bg-slate-800 text-slate-300 rounded text-[10px] hover:bg-slate-700 disabled:opacity-30">
+                <i class="fa-solid fa-arrow-up"></i>
+              </button>
+              <button onclick="moveProgram(${index}, 1)" ${index === appData.programs.length - 1 ? 'disabled' : ''} class="px-2 py-1 bg-slate-800 text-slate-300 rounded text-[10px] hover:bg-slate-700 disabled:opacity-30">
+                <i class="fa-solid fa-arrow-down"></i>
+              </button>
+              <button onclick="deleteProgram('${pg.id}')" class="px-2 py-1 bg-rose-500/10 text-rose-400 rounded text-[10px] hover:bg-rose-500/20">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[10px] font-medium text-slate-400 mb-1">Judul Program Training</label>
+            <input type="text" value="${pg.title}" oninput="updateProgram('${pg.id}', 'title', this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500" />
+          </div>
+
+          <!-- PER-CARD BLOCK COLOR THEME SELECTOR -->
+          <div>
+            <label class="block text-[10px] font-bold text-amber-400 mb-1">Warna Block Card (Individual)</label>
+            <select onchange="updateProgram('${pg.id}', 'cardTheme', this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-200">
+              <option value="navy-standard" ${pg.cardTheme === 'navy-standard' ? 'selected' : ''}>Standard Navy Dark</option>
+              <option value="gold-highlight" ${pg.cardTheme === 'gold-highlight' ? 'selected' : ''}>Amber Gold Highlight</option>
+              <option value="emerald-green" ${pg.cardTheme === 'emerald-green' ? 'selected' : ''}>Emerald Green Accent</option>
+              <option value="crimson-red" ${pg.cardTheme === 'crimson-red' ? 'selected' : ''}>Crimson Red Accent</option>
+              <option value="deep-purple" ${pg.cardTheme === 'deep-purple' ? 'selected' : ''}>Deep Purple Accent</option>
+              <option value="dark-slate" ${pg.cardTheme === 'dark-slate' ? 'selected' : ''}>Dark Slate Minimal</option>
+            </select>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[10px] font-medium text-slate-400 mb-1">Kategori</label>
+              <select onchange="updateProgram('${pg.id}', 'category', this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-200">
+                ${catOptions}
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-medium text-slate-400 mb-1">Badge Status</label>
+              <select onchange="updateProgram('${pg.id}', 'badge', this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-200">
+                <option value="BEST SELLER" ${pg.badge === 'BEST SELLER' ? 'selected' : ''}>BEST SELLER</option>
+                <option value="LIMITED SEAT" ${pg.badge === 'LIMITED SEAT' ? 'selected' : ''}>LIMITED SEAT</option>
+                <option value="REGISTRATION OPEN" ${pg.badge === 'REGISTRATION OPEN' ? 'selected' : ''}>REGISTRATION OPEN</option>
+                <option value="NONE" ${pg.badge === 'NONE' ? 'selected' : ''}>Tanpa Badge</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[10px] font-medium text-slate-400 mb-1">Durasi</label>
+              <input type="text" value="${pg.duration}" oninput="updateProgram('${pg.id}', 'duration', this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200" placeholder="misal: 2 Days Intensive" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-medium text-slate-400 mb-1">Metode Pelaksanaan</label>
+              <input type="text" value="${pg.method}" oninput="updateProgram('${pg.id}', 'method', this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200" placeholder="misal: Hybrid Class" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[10px] font-medium text-slate-400 mb-1">Deskripsi Singkat</label>
+            <textarea oninput="updateProgram('${pg.id}', 'description', this.value)" rows="2" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500">${pg.description}</textarea>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[10px] font-medium text-slate-400 mb-1">Harga / Biaya Investasi</label>
+              <input type="text" value="${pg.price}" oninput="updateProgram('${pg.id}', 'price', this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200" placeholder="misal: Rp 2.500.000" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-medium text-slate-400 mb-1">Tujuan CTA</label>
+              <select onchange="updateProgram('${pg.id}', 'ctaType', this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-200">
+                <option value="orderhero" ${pg.ctaType === 'orderhero' ? 'selected' : ''}>Checkout Orderhero</option>
+                <option value="whatsapp" ${pg.ctaType === 'whatsapp' ? 'selected' : ''}>Direct WhatsApp</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[10px] font-medium text-slate-400 mb-1">Target Link URL</label>
+            <input type="text" value="${pg.ctaUrl}" oninput="updateProgram('${pg.id}', 'ctaUrl', this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200" placeholder="https://..." />
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function addProgramItem() {
+      const newPg = {
+        id: 'pg-' + Date.now(),
+        title: 'Program Pelatihan Baru TDC',
+        category: appData.categories[1] || 'Leadership',
+        badge: 'REGISTRATION OPEN',
+        duration: '1 Day Intensive',
+        method: 'Hybrid Class',
+        description: 'Penjelasan materi serta manfaat utama pelatihan bagi peserta.',
+        price: 'Rp 1.500.000',
+        ctaType: 'orderhero',
+        ctaUrl: 'https://orderhero.id/',
+        cardTheme: 'navy-standard'
+      };
+      appData.programs.push(newPg);
+      renderProgramsEditor();
+      saveState();
+      showToast('Program baru berhasil ditambahkan!');
+    }
+
+    function updateProgram(id, field, value) {
+      const item = appData.programs.find(p => p.id === id);
+      if (item) {
+        item[field] = value;
+        saveState();
+      }
+    }
+
+    function moveProgram(index, direction) {
+      const newIndex = index + direction;
+      if (newIndex >= 0 && newIndex < appData.programs.length) {
+        const temp = appData.programs[index];
+        appData.programs[index] = appData.programs[newIndex];
+        appData.programs[newIndex] = temp;
+        renderProgramsEditor();
+        saveState();
+      }
+    }
+
+    function deleteProgram(id) {
+      if (confirm('Hapus program ini?')) {
+        appData.programs = appData.programs.filter(p => p.id !== id);
+        renderProgramsEditor();
+        saveState();
+      }
+    }
+
+    function getCardThemeStyles(themeName) {
+      switch(themeName) {
+        case 'gold-highlight':
+          return {
+            wrapper: 'bg-gradient-to-br from-amber-950/80 via-slate-900 to-slate-900 border-amber-500/40',
+            priceColor: 'text-amber-400',
+            btnBg: 'bg-amber-500 text-slate-950 hover:bg-amber-400'
+          };
+        case 'emerald-green':
+          return {
+            wrapper: 'bg-gradient-to-br from-emerald-950/80 via-slate-900 to-slate-900 border-emerald-500/40',
+            priceColor: 'text-emerald-400',
+            btnBg: 'bg-emerald-500 text-slate-950 hover:bg-emerald-400'
+          };
+        case 'crimson-red':
+          return {
+            wrapper: 'bg-gradient-to-br from-rose-950/80 via-slate-900 to-slate-900 border-rose-500/40',
+            priceColor: 'text-rose-400',
+            btnBg: 'bg-rose-500 text-white hover:bg-rose-400'
+          };
+        case 'deep-purple':
+          return {
+            wrapper: 'bg-gradient-to-br from-purple-950/80 via-slate-900 to-slate-900 border-purple-500/40',
+            priceColor: 'text-purple-300',
+            btnBg: 'bg-purple-600 text-white hover:bg-purple-500'
+          };
+        case 'dark-slate':
+          return {
+            wrapper: 'bg-slate-900 border-slate-700/60',
+            priceColor: 'text-slate-200',
+            btnBg: 'bg-slate-800 text-slate-100 hover:bg-slate-700'
+          };
+        default: // navy-standard
+          return {
+            wrapper: 'bg-slate-900/90 border-slate-800 hover:border-slate-700',
+            priceColor: appData.accentText || 'text-amber-400',
+            btnBg: `${appData.accentBg || 'bg-amber-500'} text-slate-950 hover:brightness-110`
+          };
+      }
+    }
+
+    function renderLivePreview() {
+      const screen = document.getElementById('preview-render-screen');
+      const previewWrapper = document.getElementById('preview-wrapper');
+      
+      const currentBg = bgThemeMap[appData.bgTheme] || bgThemeMap['slate-950'];
+      
+      // Update Background Frame Preview
+      previewWrapper.className = previewWrapper.className.replace(/bg-[^\s]+/, '') + ' ' + currentBg.bgClass.split(' ')[0];
+      screen.className = `w-full h-full overflow-y-auto p-4 space-y-4 ${currentBg.bgClass}`;
+
+      const filteredPrograms = appData.programs.filter(p => {
+        if (activeFilter === 'Semua') return true;
+        return p.category === activeFilter;
+      });
+
+      let accentBg = appData.accentBg || 'bg-amber-500';
+      let accentText = appData.accentText || 'text-amber-400';
+      let accentBorder = appData.accentBorder || 'border-amber-500/30';
+
+      // Profile avatar shape class
+      let shapeClass = 'rounded-full';
+      if (appData.profileShape === 'rounded') shapeClass = 'rounded-2xl';
+      if (appData.profileShape === 'idcard') shapeClass = 'rounded-xl border-4 border-amber-500/40 shadow-xl';
+
+      screen.innerHTML = `
+        <!-- TDC Header Container -->
+        <div class="text-center space-y-3 pt-2">
+          <!-- Logo / Profile Avatar -->
+          <div class="flex justify-center">
+            <img src="${appData.profileImage}" alt="Logo" class="w-20 h-20 object-cover ${shapeClass} shadow-lg shadow-amber-500/10 border-2 border-amber-500/50" />
+          </div>
+
+          <!-- Announcement Pill -->
+          ${appData.announcement ? `
+            <div class="inline-block bg-slate-900 border ${accentBorder} px-3 py-1 rounded-full text-[11px] font-medium${accentText} shadow-sm">
+              ${appData.announcement}
+            </div>
+          ` : ''}
+
+          <!-- Header Titles -->
+          <div>
+            <h2 class="text-xl font-extrabold tracking-tight ${currentBg.isLight ? 'text-slate-900' : 'text-slate-100'}">${appData.title}</h2>
+            <p class="text-xs ${currentBg.isLight ? 'text-slate-600' : 'text-slate-400'} mt-1 max-w-sm mx-auto leading-relaxed">${appData.subtitle}</p>
+          </div>
+
+          <!-- Quick Stats Grid -->
+          <div class="grid grid-cols-3 gap-2 bg-slate-900/80 border border-slate-800/80 rounded-xl p-2.5 max-w-sm mx-auto text-center">
+            <div>
+              <p class="text-[10px] uppercase text-slate-500 font-semibold">${appData.stat1Label}</p>
+              <p class="text-xs font-bold ${accentText}">${appData.stat1Value}</p>
+            </div>
+            <div class="border-x border-slate-800">
+              <p class="text-[10px] uppercase text-slate-500 font-semibold">${appData.stat2Label}</p>
+              <p class="text-xs font-bold ${accentText}">${appData.stat2Value}</p>
+            </div>
+            <div>
+              <p class="text-[10px] uppercase text-slate-500 font-semibold">${appData.stat3Label}</p>
+              <p class="text-xs font-bold ${accentText}">${appData.stat3Value}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter Pills Bar -->
+        <div class="flex items-center space-x-1.5 overflow-x-auto py-2 no-scrollbar">
+          ${appData.categories.map(cat => `
+            <button onclick="setFilter('${cat}')" class="px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition ${activeFilter === cat ? `${accentBg} text-slate-950 shadow-md` : 'bg-slate-900 text-slate-400 border border-slate-800 hover:text-slate-200'}">
+              ${cat}
+            </button>
+          `).join('')}
+        </div>
+
+        <!-- Catalog Items Bento Grid (With Individual Card Colors) -->
+        <div class="space-y-3">
+          ${filteredPrograms.length > 0 ? filteredPrograms.map(pg => {
+            const cardStyle = getCardThemeStyles(pg.cardTheme);
+            return `
+              <div class="${cardStyle.wrapper} border rounded-2xl p-4 transition-all duration-200 hover:scale-[1.01] shadow-lg relative flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-300 bg-slate-950/80 px-2 py-0.5 rounded border border-slate-800">
+                      ${pg.category}
+                    </span>
+                    ${pg.badge !== 'NONE' ? `
+                      <span class="text-[9px] font-extrabold px-2 py-0.5 rounded-full ${pg.badge === 'BEST SELLER' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30' : pg.badge === 'LIMITED SEAT' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/30' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'}">
+                        ${pg.badge}
+                      </span>
+                    ` : ''}
+                  </div>
+
+                  <h3 class="text-sm font-bold text-slate-100 leading-snug">${pg.title}</h3>
+                  <p class="text-xs text-slate-300 mt-1.5 leading-relaxed">${pg.description}</p>
+
+                  <div class="flex items-center gap-3 text-[11px] text-slate-400 mt-3 pt-2 border-t border-slate-800/60">
+                    <span class="flex items-center gap-1"><i class="fa-regular fa-clock text-slate-400"></i> ${pg.duration}</span>
+                    <span class="flex items-center gap-1"><i class="fa-solid fa-location-dot text-slate-400"></i> ${pg.method}</span>
+                  </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
+                  <div>
+                    <p class="text-[10px] text-slate-400 font-medium">Investasi Program</p>
+                    <p class="text-xs font-extrabold ${cardStyle.priceColor}">${pg.price}</p>
+                  </div>
+                  <a href="${pg.ctaUrl}" target="_blank" class="px-3.5 py-1.5 rounded-xl ${cardStyle.btnBg} text-xs font-bold shadow-md transition flex items-center gap-1.5">
+                    ${pg.ctaType === 'whatsapp' ? '<i class="fa-brands fa-whatsapp text-sm"></i> Chat' : '<i class="fa-solid fa-bolt text-xs"></i> Daftar'}
+                  </a>
+                </div>
+              </div>
+            `;
+          }).join('') : `
+            <div class="text-center py-8 bg-slate-900/50 rounded-2xl border border-dashed border-slate-800">
+              <p class="text-xs text-slate-500">Belum ada program untuk kategori ini.</p>
+            </div>
+          `}
+        </div>
+
+        <!-- Direct Support & Download Links -->
+        <div class="space-y-2 pt-2">
+          ${appData.waLink ? `
+            <a href="${appData.waLink}" target="_blank" class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-2 shadow-lg transition">
+              <i class="fa-brands fa-whatsapp text-base"></i> ${appData.waText}
+            </a>
+          ` : ''}
+
+          ${appData.pdfLink ? `
+            <a href="${appData.pdfLink}" target="_blank" class="w-full py-2.5 px-4 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 text-xs font-semibold rounded-xl flex items-center justify-center gap-2 transition">
+              <i class="fa-solid fa-file-pdf text-amber-400"></i> Download Katalog Lengkap (PDF)
+            </a>
+          ` : ''}
+        </div>
+
+        <!-- Footer Info -->
+        <footer class="text-center pt-4 pb-2 border-t border-slate-900">
+          <p class="text-[10px] ${currentBg.isLight ? 'text-slate-600' : 'text-slate-500'}">${appData.footerText}</p>
+        </footer>
+      `;
+    }
+
+    function setFilter(cat) {
+      activeFilter = cat;
+      renderLivePreview();
+    }
+
+    // Export Config JSON Backup
+    function exportJSON() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `TDC_Config_${Date.now()}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      showToast('Config berhasil di-export!');
+    }
+
+    // Import Config JSON
+    function importJSON(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          try {
+            const imported = JSON.parse(e.target.result);
+            appData = imported;
+            if (!appData.bgTheme) appData.bgTheme = 'slate-950';
+            syncInputsFromState();
+            renderCategoriesEditor();
+            renderProgramsEditor();
+            saveState();
+            showToast('Konfigurasi berhasil di-import!');
+          } catch(err) {
+            alert('Format file JSON tidak valid.');
+          }
+        };
+        reader.readAsText(file);
+      }
+    }
+
+    function downloadSelfHtmlApp() {
+      const currentHtml = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+      const blob = new Blob([currentHtml], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `TDC_App_Builder_${Date.now()}.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Aplikasi HTML Builder berhasil di-download!');
+    }
+
+    function copyOrderheroHTML() {
+      const currentBgHex = (bgThemeMap[appData.bgTheme] || bgThemeMap['slate-950']).hex;
+      const isLightBg = (bgThemeMap[appData.bgTheme] || bgThemeMap['slate-950']).isLight;
+      const textColor = isLightBg ? '#0f172a' : '#ffffff';
+      const subtitleColor = isLightBg ? '#475569' : '#94a3b8';
+
+      const htmlSnippet = `
+<!-- ============================================================== -->
+<!-- TARUNA DEVELOPMENT CENTER (TDC) PROGRAM CATALOGUE SNIPPET      -->
+<!-- Generated via TDC Link Hub Builder                              -->
+<!-- ============================================================== -->
+<div id="tdc-hub-container" style="background-color: ${currentBgHex}; color: ${textColor}; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; padding: 16px; border-radius: 16px; max-width: 720px; margin: 0 auto;">
+  
+  <!-- Header -->
+  <div style="text-align: center; margin-bottom: 20px;">
+    <img src="${appData.profileImage}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin: 0 auto 12px; display: block; border: 2px solid #eab308;" />
+    ${appData.announcement ? `<div style="display: inline-block; background: #0f172a; border: 1px solid rgba(234, 179, 8, 0.3); color: #eab308; font-size: 11px; padding: 4px 12px; border-radius: 9999px; font-weight: 600; margin-bottom: 8px;">${appData.announcement}</div>` : ''}
+    <h2 style="font-size: 20px; font-weight: 800; color: ${textColor}; margin: 0 0 6px 0;">${appData.title}</h2>
+    <p style="font-size: 12px; color: ${subtitleColor}; margin: 0; line-height: 1.5;">${appData.subtitle}</p>
+  </div>
+
+  <!-- Quick Stats -->
+  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 10px; margin-bottom: 20px; text-align: center;">
+    <div>
+      <div style="font-size: 9px; text-transform: uppercase; color: #64748b; font-weight: 700;">${appData.stat1Label}</div>
+      <div style="font-size: 12px; font-weight: 800; color: #eab308;">${appData.stat1Value}</div>
+    </div>
+    <div style="border-left: 1px solid #1e293b; border-right: 1px solid #1e293b;">
+      <div style="font-size: 9px; text-transform: uppercase; color: #64748b; font-weight: 700;">${appData.stat2Label}</div>
+      <div style="font-size: 12px; font-weight: 800; color: #eab308;">${appData.stat2Value}</div>
+    </div>
+    <div>
+      <div style="font-size: 9px; text-transform: uppercase; color: #64748b; font-weight: 700;">${appData.stat3Label}</div>
+      <div style="font-size: 12px; font-weight: 800; color: #eab308;">${appData.stat3Value}</div>
+    </div>
+  </div>
+
+  <!-- Program Catalog Cards -->
+  <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+    ${appData.programs.map(pg => `
+      <div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <span style="font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; background: #020617; padding: 2px 8px; border-radius: 4px; border: 1px solid #1e293b;">${pg.category}</span>${pg.badge !== 'NONE' ? `<span style="font-size: 9px; font-weight: 800; color: #eab308; background: rgba(234,179,8,0.1); padding: 2px 8px; border-radius: 9999px; border: 1px solid rgba(234,179,8,0.3);">${pg.badge}</span>` : ''}
+        </div>
+        <h3 style="font-size: 14px; font-weight: 700; color: #ffffff; margin: 0 0 4px 0;">${pg.title}</h3>
+        <p style="font-size: 11px; color: #94a3b8; margin: 0 0 10px 0; line-height: 1.4;">${pg.description}</p>
+        <div style="font-size: 10px; color: #64748b; margin-bottom: 12px;">⏰ ${pg.duration} &nbsp;\vert{}&nbsp; 📍 ${pg.method}</div>
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #1e293b; padding-top: 10px;">
+          <div>
+            <div style="font-size: 9px; color: #64748b;">Investasi</div>
+            <div style="font-size: 12px; font-weight: 800; color: #eab308;">${pg.price}</div>
+          </div>
+          <a href="${pg.ctaUrl}" target="_blank" style="background: #eab308; color: #020617; font-size: 11px; font-weight: 800; px: 6px 14px; padding: 6px 14px; border-radius: 8px; text-decoration: none; display: inline-block;">
+            ${pg.ctaType === 'whatsapp' ? 'Chat WhatsApp' : 'Daftar Sekarang'}
+          </a>
+        </div>
+      </div>
+    `).join('')}
+  </div>
+
+  <!-- Direct Actions -->
+  <div style="display: flex; flex-direction: column; gap: 8px;">
+    ${appData.waLink ? `<a href="${appData.waLink}" target="_blank" style="background: #059669; color: #ffffff; text-align: center; font-size: 12px; font-weight: 700; padding: 10px; border-radius: 10px; text-decoration: none; display: block;">${appData.waText}</a>` : ''}
+    ${appData.pdfLink ? `<a href="${appData.pdfLink}" target="_blank" style="background: #0f172a; border: 1px solid #1e293b; color: #e2e8f0; text-align: center; font-size: 11px; font-weight: 600; padding: 8px; border-radius: 10px; text-decoration: none; display: block;">Download Katalog PDF</a>` : ''}
+  </div>
+
+  <div style="text-align: center; margin-top: 16px; font-size: 10px; color: #475569;">
+    ${appData.footerText}
+  </div>
+</div>
+      `.trim();
+
+      const tempTextArea = document.createElement('textarea');
+      tempTextArea.value = htmlSnippet;
+      document.body.appendChild(tempTextArea);
+      tempTextArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempTextArea);
+
+      showToast('Kode Orderhero HTML berhasil disalin!');
+    }
+  </script>
+</body>
+</html>
